@@ -9,9 +9,15 @@ jobs:
 
     steps:
       - name: Clone repository
-        run: git clone https://github.com/phhusson/treble_app.git
+        run: |
+          git clone https://github.com/phhusson/treble_app.git
 
-      - name: Set up Java
+      - name: Patch OppoSettings
+        run: |
+          sed -i 's/ || Tools.oppoPrjName.contains("19531")//' \
+          treble_app/app/src/main/java/me/phh/treble/app/OppoSettings.kt
+
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -20,14 +26,14 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build
+      - name: Build APK
+        working-directory: treble_app
         run: |
-          cd treble_app
           chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: treble_app
+          name: treble_app-debug
           path: treble_app/app/build/outputs/apk/debug/*.apk
